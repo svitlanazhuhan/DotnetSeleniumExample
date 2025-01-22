@@ -1,0 +1,48 @@
+trigger:
+  branches:
+    include:
+      - main  # Replace with your branch name if different
+      - develop
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.csproj' # Searches for .csproj files
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+# Step 1: Check out the code
+- task: Checkout@2
+  displayName: 'Check out code'
+
+# Step 2: Restore NuGet packages
+- task: NuGetToolInstaller@1
+  displayName: 'Install NuGet'
+
+- task: NuGetCommand@2
+  displayName: 'Restore NuGet packages'
+  inputs:
+    command: 'restore'
+    restoreSolution: '$(solution)'
+
+# Step 3: Build the solution
+- task: MSBuild@1
+  displayName: 'Build solution'
+  inputs:
+    solution: '$(solution)'
+    msbuildArguments: '/p:Configuration=$(buildConfiguration) /p:Platform="$(buildPlatform)"'
+
+# Step 4: Run tests with NUnit
+- task: VSTest@2
+  displayName: 'Run NUnit tests'
+  inputs:
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\bin\$(buildConfiguration)\*.Tests.dll
+    searchFolder: '$(System.DefaultWorkingDirectory)'
+    testFiltercriteria: ''
+    runSettingsFile: ''
+    codeCoverageEnabled: false
+    otherConsoleOptions: '--framework:net-4.0'
