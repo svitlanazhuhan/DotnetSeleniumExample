@@ -14,7 +14,7 @@ variables:
 
 steps:
 # Step 1: Check out the code
-- task: Checkout@2
+- checkout: self
   displayName: 'Check out code'
 
 # Step 2: Restore NuGet packages
